@@ -119,8 +119,8 @@ class TDSliderState extends State<TDSlider> {
                   return;
                 }
 
-                final tapPosition = sliderBox.globalToLocal(event.position);
-                widget.onTap?.call(tapPosition, value);
+                final tapOffset = sliderBox.globalToLocal(event.position);
+                widget.onTap?.call(tapOffset, value);
               },
               child: SliderTheme(
                 data: tdSliderThemeData.sliderThemeData,
@@ -152,6 +152,11 @@ class TDSliderState extends State<TDSlider> {
   }
 }
 
+enum Position {
+  start,
+  end,
+}
+
 /// 范围滑动选择器
 class TDRangeSlider extends StatefulWidget {
   /// 默认值
@@ -181,7 +186,7 @@ class TDRangeSlider extends StatefulWidget {
   final TDSliderThemeData? sliderThemeData;
 
   // Thumb 位置、坐标、当前值
-  final Function(String position, Offset offset, double value)? onTap;
+  final Function(Position position, Offset offset, double value)? onTap;
 
   const TDRangeSlider(
       {Key? key,
@@ -281,7 +286,7 @@ class _TDRangeSliderState extends State<TDRangeSlider> {
                 }
 
                 // 坐标系转换
-                final tapPosition = sliderBox.globalToLocal(event.position);
+                final tapOffset = sliderBox.globalToLocal(event.position);
                 final sliderWidth = sliderBox.size.width;
 
                 // 动态获取 Thumb 尺寸（两个参数）
@@ -303,26 +308,25 @@ class _TDRangeSliderState extends State<TDRangeSlider> {
 
                 // 检测点击区域
                 final radius = thumbSize.width / 2;
-                final isStartTap =
-                    (tapPosition - startCenter).distance <= radius;
-                final isEndTap = (tapPosition - endCenter).distance <= radius;
+                final isStartTap = (tapOffset - startCenter).distance <= radius;
+                final isEndTap = (tapOffset - endCenter).distance <= radius;
 
-                String position = 'track';
+                Position position = Position.start;
                 double tappedValue = 0;
 
                 if (isStartTap) {
-                  position = 'start';
+                  position = Position.start;
                   tappedValue = rangeValues.start;
                 } else if (isEndTap) {
-                  position = 'end';
+                  position = Position.end;
                   tappedValue = rangeValues.end;
                 } else {
                   // 计算轨道点击对应的值
                   tappedValue =
-                      (tapPosition.dx / sliderWidth) * (max - min) + min;
+                      (tapOffset.dx / sliderWidth) * (max - min) + min;
                 }
 
-                widget.onTap?.call(position, tapPosition, tappedValue);
+                widget.onTap?.call(position, tapOffset, tappedValue);
               },
               child: SliderTheme(
                 data: tdSliderThemeData.sliderThemeData,
